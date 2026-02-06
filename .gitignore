@@ -1,5 +1,10 @@
 __pycache__/
 *.pyc
+*.pyo
 .news_cache/
 *.pdf
 .claude/
+.env
+*.egg-info/
+dist/
+build/
