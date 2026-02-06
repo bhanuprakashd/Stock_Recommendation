@@ -47,15 +47,8 @@ plotly>=5.18.0
 scipy>=1.11.0
 
 # =============================================================================
-# News Sentiment Analysis (for news-based triggers)
+# News Sentiment Analysis (optional - install separately for FinBERT support)
 # =============================================================================
-
-# FinBERT and transformers (for sentiment analysis)
-transformers>=4.35.0
-
-# PyTorch (required for FinBERT)
-# Use 'torch' for GPU support, or 'torch-cpu' for CPU-only (smaller)
-torch>=2.0.0
-
-# Optional: NewsAPI client (if using NewsAPI)
-# newsapi-python>=0.2.7
+# pip install transformers torch
+# These are NOT included here as they are ~2GB+ and optional.
+# The app gracefully falls back when they are not available.
