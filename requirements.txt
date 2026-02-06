@@ -46,6 +46,9 @@ plotly>=5.18.0
 # Scientific computing (for quant metrics)
 scipy>=1.11.0
 
+# HTML parsing (for Wikipedia fallback in ticker fetching)
+lxml>=4.9.0
+
 # =============================================================================
 # News Sentiment Analysis (optional - install separately for FinBERT support)
 # =============================================================================

@@ -41,12 +41,13 @@ def get_fundamentals(symbol: str) -> Optional[Dict]:
         ticker = yf.Ticker(f"{symbol}.NS")
         info = ticker.info
 
-        if not info or info.get('regularMarketPrice') is None:
+        price = info.get('regularMarketPrice') or info.get('currentPrice') or info.get('previousClose')
+        if not info or price is None:
             return None
 
         return {
             # Price & Valuation
-            'price': info.get('regularMarketPrice') or info.get('currentPrice'),
+            'price': price,
             'pe_ratio': info.get('trailingPE'),
             'forward_pe': info.get('forwardPE'),
             'pb_ratio': info.get('priceToBook'),
