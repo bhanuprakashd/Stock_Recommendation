@@ -30,6 +30,7 @@ class FundamentalScore:
 def get_fundamentals(symbol: str) -> Optional[Dict]:
     """
     Fetch fundamental data for a stock.
+    Checks live_data/ cache first, falls back to yfinance.
 
     Args:
         symbol: NSE stock symbol
@@ -38,6 +39,16 @@ def get_fundamentals(symbol: str) -> Optional[Dict]:
         Dictionary of fundamental metrics
     """
     import time
+
+    # Check cached data first
+    try:
+        from download_data import load_cached_fundamentals, is_data_stale
+        if not is_data_stale():
+            cached = load_cached_fundamentals(symbol)
+            if cached is not None:
+                return cached
+    except ImportError:
+        pass
 
     for attempt in range(3):
         try:

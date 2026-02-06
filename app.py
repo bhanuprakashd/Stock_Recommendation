@@ -890,6 +890,29 @@ def render_sidebar():
 
     st.sidebar.markdown("---")
 
+    # Data cache status
+    try:
+        from download_data import get_data_freshness, refresh_all_data
+        freshness = get_data_freshness()
+        if freshness:
+            st.sidebar.markdown(f"##### Data Cache")
+            st.sidebar.markdown(f"Updated: **{freshness['age_str']}** ({freshness.get('index', 'N/A')})")
+            st.sidebar.markdown(f"Stocks: {freshness.get('prices_downloaded', 0)} prices, {freshness.get('fundamentals_downloaded', 0)} fundamentals")
+        else:
+            st.sidebar.markdown("##### Data Cache")
+            st.sidebar.warning("No cached data")
+
+        if st.sidebar.button("Refresh Data", use_container_width=True):
+            with st.sidebar:
+                with st.spinner("Downloading data..."):
+                    refresh_all_data()
+                st.success("Data refreshed!")
+                st.rerun()
+    except ImportError:
+        pass
+
+    st.sidebar.markdown("---")
+
     # Quick stats
     st.sidebar.markdown("##### Performance")
     col1, col2 = st.sidebar.columns(2)

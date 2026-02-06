@@ -18,6 +18,7 @@ from nse_tickers import fetch_nse_tickers, fetch_all_nse_tickers
 def fetch_stock_history(symbol: str, days: int = 365) -> Optional[pd.DataFrame]:
     """
     Fetch historical OHLCV data for a single stock.
+    Checks live_data/ cache first, falls back to yfinance.
 
     Args:
         symbol: NSE stock symbol (e.g., 'RELIANCE', 'TCS')
@@ -30,6 +31,16 @@ def fetch_stock_history(symbol: str, days: int = 365) -> Optional[pd.DataFrame]:
         DataFrame with columns: Date, Open, High, Low, Close, Volume
     """
     import time
+
+    # Check cached data first
+    try:
+        from download_data import load_cached_price, is_data_stale
+        if not is_data_stale():
+            cached = load_cached_price(symbol)
+            if cached is not None and not cached.empty:
+                return cached
+    except ImportError:
+        pass
 
     ticker = f"{symbol}.NS"
 
@@ -120,15 +131,34 @@ def fetch_multiple_stocks(
     results = {}
     failed = []
 
+    # Bulk-load from cache first
+    remaining = list(symbols)
+    try:
+        from download_data import load_cached_price, is_data_stale
+        if not is_data_stale():
+            for sym in symbols:
+                cached = load_cached_price(sym)
+                if cached is not None and not cached.empty:
+                    results[sym] = cached
+            remaining = [s for s in symbols if s not in results]
+            if results:
+                print(f"Loaded {len(results)} stocks from cache")
+    except ImportError:
+        pass
+
+    if not remaining:
+        print(f"All {len(results)} stocks loaded from cache")
+        return results
+
     def fetch_with_delay(symbol: str) -> Tuple[str, Optional[pd.DataFrame]]:
         time.sleep(delay)
         df = fetch_stock_history(symbol, days)
         return symbol, df
 
-    print(f"Fetching {len(symbols)} stocks ({days} days history)...")
+    print(f"Fetching {len(remaining)} stocks from yfinance ({days} days history)...")
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(fetch_with_delay, s): s for s in symbols}
+        futures = {executor.submit(fetch_with_delay, s): s for s in remaining}
 
         for i, future in enumerate(as_completed(futures), 1):
             symbol = futures[future]
@@ -142,9 +172,9 @@ def fetch_multiple_stocks(
                 failed.append(symbol)
 
             if i % 10 == 0:
-                print(f"Progress: {i}/{len(symbols)} stocks fetched")
+                print(f"Progress: {i}/{len(remaining)} stocks fetched")
 
-    print(f"Progress: {len(symbols)}/{len(symbols)} stocks fetched")
+    print(f"Progress: {len(remaining)}/{len(remaining)} stocks fetched")
     print(f"\nCompleted: {len(results)} success, {len(failed)} failed")
     if failed:
         print(f"Failed symbols: {failed[:10]}{'...' if len(failed) > 10 else ''}")
