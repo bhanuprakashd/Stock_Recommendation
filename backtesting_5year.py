@@ -486,19 +486,12 @@ class FiveYearBacktester:
 
 
 if __name__ == "__main__":
-    # Extended stock list for comprehensive testing
-    symbols = [
-        # NIFTY 50 components
-        "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
-        "HINDUNILVR", "SBIN", "BHARTIARTL", "KOTAKBANK", "ITC",
-        "LT", "AXISBANK", "ASIANPAINT", "MARUTI", "BAJFINANCE",
-        "HCLTECH", "SUNPHARMA", "TITAN", "WIPRO", "ULTRACEMCO",
-        "NESTLEIND", "POWERGRID", "NTPC", "TECHM", "JSWSTEEL",
-        "TATASTEEL", "INDUSINDBK", "GRASIM", "ADANIPORTS", "ONGC",
-        # Additional large caps
-        "BAJAJFINSV", "DRREDDY", "CIPLA", "EICHERMOT", "HEROMOTOCO",
-        "COALINDIA", "BRITANNIA", "DIVISLAB", "BPCL", "HINDALCO"
-    ]
+    from nse_tickers import fetch_nse_tickers
+    symbols = fetch_nse_tickers("NIFTY 50")
+    if not symbols:
+        print("Failed to fetch NIFTY 50 stocks from NSE API.")
+        import sys
+        sys.exit(1)
 
     bt = FiveYearBacktester()
     results = bt.run_5year_backtest(symbols)

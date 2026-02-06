@@ -359,13 +359,11 @@ def run_iterative_improvement():
     print("ITERATIVE BACKTEST IMPROVEMENT")
     print("="*80)
 
-    symbols = [
-        "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
-        "HINDUNILVR", "SBIN", "BHARTIARTL", "KOTAKBANK", "ITC",
-        "LT", "AXISBANK", "ASIANPAINT", "MARUTI", "BAJFINANCE",
-        "HCLTECH", "SUNPHARMA", "TITAN", "WIPRO", "ULTRACEMCO",
-        "NESTLEIND", "POWERGRID", "NTPC", "TECHM", "JSWSTEEL"
-    ]
+    from nse_tickers import fetch_nse_tickers
+    symbols = fetch_nse_tickers("NIFTY 50")
+    if not symbols:
+        print("Failed to fetch NIFTY 50 stocks from NSE API.")
+        return
 
     # Full available period (2024-02 to 2026-01)
     start = datetime(2024, 3, 1)

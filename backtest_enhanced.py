@@ -1021,42 +1021,25 @@ def run_enhanced_optimization(symbols: List[str], years: int = 10):
 if __name__ == "__main__":
     import sys
 
-    # Default NIFTY 50 stocks
-    NIFTY_50 = [
-        "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
-        "HINDUNILVR", "SBIN", "BHARTIARTL", "KOTAKBANK", "ITC",
-        "LT", "AXISBANK", "ASIANPAINT", "MARUTI", "BAJFINANCE",
-        "HCLTECH", "SUNPHARMA", "TITAN", "WIPRO", "ULTRACEMCO",
-        "NESTLEIND", "POWERGRID", "NTPC", "TECHM", "JSWSTEEL",
-        "TATASTEEL", "INDUSINDBK", "GRASIM", "ADANIPORTS", "ONGC",
-        "BAJAJFINSV", "DRREDDY", "CIPLA", "EICHERMOT", "HEROMOTOCO",
-        "COALINDIA", "BRITANNIA", "DIVISLAB", "BPCL", "HINDALCO"
-    ]
+    from nse_tickers import fetch_nse_tickers
 
-    # Check for dynamic stock fetching
-    use_nifty500 = "--nifty500" in sys.argv
-    use_nifty200 = "--nifty200" in sys.argv
-    use_nifty100 = "--nifty100" in sys.argv
-
-    if use_nifty500 or use_nifty200 or use_nifty100:
-        from nse_tickers import fetch_nse_tickers
-        if use_nifty500:
-            index_name = "NIFTY 500"
-        elif use_nifty200:
-            index_name = "NIFTY 200"
-        else:
-            index_name = "NIFTY 100"
-
-        print(f"Fetching {index_name} stocks...")
-        symbols = fetch_nse_tickers(index_name)
-        if symbols:
-            symbols = [s for s in symbols if not s.startswith("NIFTY")]
-            print(f"Loaded {len(symbols)} stocks from {index_name}")
-        else:
-            print(f"Failed to fetch {index_name}, using NIFTY 50")
-            symbols = NIFTY_50
+    # Determine index from command-line arguments
+    if "--nifty500" in sys.argv:
+        index_name = "NIFTY 500"
+    elif "--nifty200" in sys.argv:
+        index_name = "NIFTY 200"
+    elif "--nifty100" in sys.argv:
+        index_name = "NIFTY 100"
     else:
-        symbols = NIFTY_50
+        index_name = "NIFTY 50"
+
+    print(f"Fetching {index_name} stocks...")
+    symbols = fetch_nse_tickers(index_name)
+    symbols = [s for s in symbols if not s.startswith("NIFTY")]
+    if not symbols:
+        print(f"Failed to fetch {index_name} stocks from NSE API.")
+        sys.exit(1)
+    print(f"Loaded {len(symbols)} stocks from {index_name}")
 
     print("\n" + "="*80)
     print("ENHANCED 24-SIGNAL BACKTESTING SYSTEM")

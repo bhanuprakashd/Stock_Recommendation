@@ -732,38 +732,18 @@ def render_news_section(symbol: str):
         """, unsafe_allow_html=True)
 
 
+@st.cache_data(ttl=3600)
 def get_stock_list(index: str = "NIFTY 50", sector: str = "All Sectors"):
-    """Get list of stocks based on index and sector filter."""
-    # Fallback NIFTY 50 list (updated Feb 2026)
-    nifty50_fallback = [
-        "RELIANCE", "HDFCBANK", "BHARTIARTL", "TCS", "ICICIBANK",
-        "SBIN", "INFY", "BAJFINANCE", "LT", "HINDUNILVR",
-        "MARUTI", "M&M", "HCLTECH", "AXISBANK", "SUNPHARMA",
-        "KOTAKBANK", "ITC", "ULTRACEMCO", "TITAN", "ADANIPORTS",
-        "NTPC", "ONGC", "BAJAJFINSV", "POWERGRID", "TATAMOTORS",
-        "COALINDIA", "DRREDDY", "WIPRO", "TATASTEEL", "NESTLEIND",
-        "TECHM", "ADANIENT", "JSWSTEEL", "CIPLA", "GRASIM",
-        "APOLLOHOSP", "EICHERMOT", "TATACONSUM", "BAJAJ-AUTO", "HINDALCO",
-        "SBILIFE", "HDFCLIFE", "ASIANPAINT", "ETERNAL", "TRENT",
-        "SHRIRAMFIN", "BEL", "JIOFIN", "MAXHEALTH", "INDIGO"
-    ]
-
-    try:
-        stocks = fetch_nse_tickers(index)
-        if stocks and len(stocks) > 0:
-            stocks = [s for s in stocks if not s.startswith("NIFTY")]
-        else:
-            stocks = nifty50_fallback
-    except:
-        stocks = nifty50_fallback
+    """Get list of stocks dynamically from NSE API."""
+    stocks = fetch_nse_tickers(index)
+    if not stocks:
+        return []
+    stocks = [s for s in stocks if not s.startswith("NIFTY")]
 
     if sector and sector != "All Sectors":
-        try:
-            sector_stocks = get_tickers_by_sector(sector, index)
-            if sector_stocks:
-                stocks = [s for s in stocks if s in sector_stocks]
-        except:
-            pass
+        sector_stocks = get_tickers_by_sector(sector, index)
+        if sector_stocks:
+            stocks = [s for s in stocks if s in sector_stocks]
 
     return stocks
 
@@ -1058,7 +1038,10 @@ def render_stock_analysis():
     filtered_stocks = get_stock_list(selected_index, selected_sector)
 
     with col3:
-        symbol = st.selectbox("Stock", filtered_stocks if filtered_stocks else ["RELIANCE"])
+        if not filtered_stocks:
+            st.warning("Could not fetch stock list from NSE. Check your internet connection.")
+            return
+        symbol = st.selectbox("Stock", filtered_stocks)
     with col4:
         days = st.selectbox("Period", [90, 180, 365], index=2, format_func=lambda x: f"{x}D")
 

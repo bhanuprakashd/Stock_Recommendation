@@ -232,39 +232,8 @@ NEWS_SAFEGUARDS = {
 # COMPANY NAME MAPPINGS
 # =============================================================================
 
-# Map stock symbols to company names for better news search
-COMPANY_NAMES = {
-    'RELIANCE': 'Reliance Industries',
-    'TCS': 'Tata Consultancy Services',
-    'INFY': 'Infosys',
-    'HDFCBANK': 'HDFC Bank',
-    'ICICIBANK': 'ICICI Bank',
-    'SBIN': 'State Bank of India',
-    'BHARTIARTL': 'Bharti Airtel',
-    'ITC': 'ITC Limited',
-    'KOTAKBANK': 'Kotak Mahindra Bank',
-    'LT': 'Larsen & Toubro',
-    'AXISBANK': 'Axis Bank',
-    'MARUTI': 'Maruti Suzuki',
-    'TITAN': 'Titan Company',
-    'BAJFINANCE': 'Bajaj Finance',
-    'WIPRO': 'Wipro',
-    'HCLTECH': 'HCL Technologies',
-    'SUNPHARMA': 'Sun Pharma',
-    'ASIANPAINT': 'Asian Paints',
-    'TATAMOTORS': 'Tata Motors',
-    'TATASTEEL': 'Tata Steel',
-    'POWERGRID': 'Power Grid Corporation',
-    'NTPC': 'NTPC Limited',
-    'ONGC': 'Oil and Natural Gas Corporation',
-    'COALINDIA': 'Coal India',
-    'ADANIPORTS': 'Adani Ports',
-    'ADANIENT': 'Adani Enterprises',
-    'TECHM': 'Tech Mahindra',
-    'ULTRACEMCO': 'UltraTech Cement',
-    'HINDALCO': 'Hindalco Industries',
-    'JSWSTEEL': 'JSW Steel',
-}
+# Dynamic company name cache (fetched from yfinance)
+_company_name_cache = {}
 
 
 # =============================================================================
@@ -272,8 +241,22 @@ COMPANY_NAMES = {
 # =============================================================================
 
 def get_company_name(symbol: str) -> str:
-    """Get company name for a symbol, or return symbol if not found."""
-    return COMPANY_NAMES.get(symbol.upper(), symbol)
+    """Get company name for a symbol via yfinance, or return symbol if not found."""
+    sym = symbol.upper()
+    if sym in _company_name_cache:
+        return _company_name_cache[sym]
+
+    try:
+        import yfinance as yf
+        ticker = yf.Ticker(f"{sym}.NS")
+        name = ticker.info.get('shortName') or ticker.info.get('longName')
+        if name:
+            _company_name_cache[sym] = name
+            return name
+    except Exception:
+        pass
+
+    return sym
 
 
 def get_enabled_sources() -> List[str]:

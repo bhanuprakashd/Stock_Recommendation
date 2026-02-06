@@ -20,7 +20,7 @@ from sectorial_tickers import (
     get_predefined_sector_tickers,
     get_all_sector_tickers,
     resolve_sector_name,
-    PREDEFINED_SECTORS
+    _build_sector_cache
 )
 from swing_report import generate_swing_report, print_swing_report, generate_reports_for_sector
 
@@ -381,11 +381,10 @@ def quick_scan(symbols: List[str] = None) -> List[SwingRecommendation]:
         List of recommendations
     """
     if symbols is None:
-        symbols = [
-            "RELIANCE", "TCS", "INFY", "HDFCBANK", "ICICIBANK",
-            "SBIN", "BHARTIARTL", "ITC", "KOTAKBANK", "LT",
-            "AXISBANK", "MARUTI", "TITAN", "BAJFINANCE", "WIPRO"
-        ]
+        symbols = fetch_nse_tickers("NIFTY 50")
+        if not symbols:
+            print("Failed to fetch NIFTY 50 stocks from NSE API.")
+            return []
 
     return get_swing_recommendations(
         symbols=symbols,
@@ -418,7 +417,7 @@ def sector_scan(sector: str, top_n: int = 5, fetch_all: bool = False) -> List[Sw
 
     if not symbols:
         print(f"No stocks found for sector: {sector}")
-        print(f"Available sectors: {', '.join(PREDEFINED_SECTORS.keys())}")
+        print(f"Available sectors: {', '.join(_build_sector_cache().keys())}")
         return []
 
     mode = "ALL" if fetch_all else "major"
@@ -484,7 +483,7 @@ if __name__ == "__main__":
         else:
             print("Usage: python swing_recommender.py --sector <sector_name>")
             print("\nAvailable sectors:")
-            for sec in PREDEFINED_SECTORS.keys():
+            for sec in _build_sector_cache().keys():
                 print(f"  - {sec}")
             print("\nAliases: banking, IT, pharma, auto, fmcg, metal, power, infra, realty")
             sys.exit(0)

@@ -276,17 +276,12 @@ def run_and_generate_report(include_walk_forward: bool = True):
     print("GENERATING COMPREHENSIVE BACKTEST REPORT")
     print("="*60)
 
-    # Stock list
-    symbols = [
-        "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
-        "HINDUNILVR", "SBIN", "BHARTIARTL", "KOTAKBANK", "ITC",
-        "LT", "AXISBANK", "ASIANPAINT", "MARUTI", "BAJFINANCE",
-        "HCLTECH", "SUNPHARMA", "TITAN", "WIPRO", "ULTRACEMCO",
-        "NESTLEIND", "POWERGRID", "NTPC", "TECHM", "JSWSTEEL",
-        "TATASTEEL", "INDUSINDBK", "GRASIM", "ADANIPORTS", "ONGC",
-        "BAJAJFINSV", "DRREDDY", "CIPLA", "EICHERMOT", "HEROMOTOCO",
-        "COALINDIA", "BRITANNIA", "DIVISLAB", "BPCL", "HINDALCO"
-    ]
+    # Fetch stock list dynamically
+    from nse_tickers import fetch_nse_tickers
+    symbols = fetch_nse_tickers("NIFTY 50")
+    if not symbols:
+        print("Failed to fetch NIFTY 50 stocks from NSE API.")
+        return
 
     # Run backtest
     print("\n[1/4] Running 5-year backtest...")

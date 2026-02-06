@@ -1086,11 +1086,7 @@ if __name__ == "__main__":
 
     # Determine stock universe
     if args.quick:
-        symbols = [
-            "RELIANCE", "TCS", "INFY", "HDFCBANK", "ICICIBANK",
-            "HINDUNILVR", "SBIN", "ITC", "BHARTIARTL", "LT",
-            "SUNPHARMA", "TITAN", "BAJFINANCE", "MARUTI", "WIPRO"
-        ]
+        symbols = fetch_nse_tickers("NIFTY 50")[:15]
         index = "QUICK"
     elif args.nifty500:
         symbols = None

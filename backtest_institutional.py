@@ -1031,38 +1031,23 @@ def iterative_optimization(symbols: List[str], iterations: int = 10, years: int 
 if __name__ == "__main__":
     import sys
 
-    # Check for command line arguments
-    use_dynamic = "--dynamic" in sys.argv or "--nifty50" in sys.argv
-    use_nifty100 = "--nifty100" in sys.argv
-    use_nifty200 = "--nifty200" in sys.argv
+    from nse_tickers import fetch_nse_tickers
 
-    if use_dynamic or use_nifty100 or use_nifty200:
-        # Dynamic fetching from NSE
-        from nse_tickers import fetch_nse_tickers
-
-        if use_nifty200:
-            index_name = "NIFTY 200"
-        elif use_nifty100:
-            index_name = "NIFTY 100"
-        else:
-            index_name = "NIFTY 50"
-
-        print(f"Fetching {index_name} constituents from NSE...")
-        symbols = fetch_nse_tickers(index_name)
-        print(f"Found {len(symbols)} stocks")
+    # Determine index from command-line arguments
+    if "--nifty200" in sys.argv:
+        index_name = "NIFTY 200"
+    elif "--nifty100" in sys.argv:
+        index_name = "NIFTY 100"
     else:
-        # Default: Hardcoded NIFTY 50 stocks (for reproducible backtests)
-        symbols = [
-            "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
-            "HINDUNILVR", "SBIN", "BHARTIARTL", "KOTAKBANK", "ITC",
-            "LT", "AXISBANK", "ASIANPAINT", "MARUTI", "BAJFINANCE",
-            "HCLTECH", "SUNPHARMA", "TITAN", "WIPRO", "ULTRACEMCO",
-            "NESTLEIND", "POWERGRID", "NTPC", "TECHM", "JSWSTEEL",
-            "TATASTEEL", "INDUSINDBK", "GRASIM", "ADANIPORTS", "ONGC",
-            "BAJAJFINSV", "DRREDDY", "CIPLA", "EICHERMOT", "HEROMOTOCO",
-            "COALINDIA", "BRITANNIA", "DIVISLAB", "BPCL", "HINDALCO"
-        ]
-        print(f"Using hardcoded {len(symbols)} NIFTY 50 stocks (use --dynamic for live fetch)")
+        index_name = "NIFTY 50"
+
+    print(f"Fetching {index_name} constituents from NSE...")
+    symbols = fetch_nse_tickers(index_name)
+    symbols = [s for s in symbols if not s.startswith("NIFTY")]
+    if not symbols:
+        print(f"Failed to fetch {index_name} stocks from NSE API.")
+        sys.exit(1)
+    print(f"Found {len(symbols)} stocks")
 
     # Run iterative optimization
     results = iterative_optimization(symbols, iterations=3)

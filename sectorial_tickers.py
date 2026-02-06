@@ -240,69 +240,35 @@ def print_sector_summary(grouped: Dict[str, List[str]]):
             print("  " + ", ".join(row))
 
 
-# Pre-defined sector stock lists (for quick access without API calls)
-PREDEFINED_SECTORS = {
-    "Technology": [
-        "TCS", "INFY", "WIPRO", "HCLTECH", "TECHM", "LTIM", "MPHASIS",
-        "COFORGE", "PERSISTENT", "LTTS", "TATAELXSI", "MINDTREE"
-    ],
-    "Financial Services": [
-        "HDFCBANK", "ICICIBANK", "KOTAKBANK", "AXISBANK", "SBIN", "BANKBARODA",
-        "PNB", "INDUSINDBK", "BAJFINANCE", "BAJAJFINSV", "HDFCLIFE", "SBILIFE",
-        "ICICIPRULI", "ICICIGI", "CHOLAFIN", "SHRIRAMFIN", "M&MFIN"
-    ],
-    "Healthcare": [
-        "SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "APOLLOHOSP", "FORTIS",
-        "BIOCON", "LUPIN", "AUROPHARMA", "TORNTPHARM", "ALKEM", "GLAND"
-    ],
-    "Consumer Cyclical": [
-        "MARUTI", "TATAMOTORS", "M&M", "BAJAJ-AUTO", "HEROMOTOCO", "EICHERMOT",
-        "TITAN", "TRENT", "PAGEIND", "RELAXO", "BATAINDIA"
-    ],
-    "Consumer Defensive": [
-        "HINDUNILVR", "ITC", "NESTLEIND", "BRITANNIA", "DABUR", "MARICO",
-        "GODREJCP", "COLPAL", "TATACONSUM", "VBL", "UBL"
-    ],
-    "Energy": [
-        "RELIANCE", "ONGC", "IOC", "BPCL", "HINDPETRO", "GAIL", "PETRONET",
-        "OIL", "MRPL", "CASTROLIND"
-    ],
-    "Industrials": [
-        "LT", "SIEMENS", "ABB", "HAVELLS", "BHARATFORG", "CUMMINSIND",
-        "THERMAX", "GRINDWELL", "HONAUT", "BEL", "HAL", "BHEL"
-    ],
-    "Basic Materials": [
-        "TATASTEEL", "JSWSTEEL", "HINDALCO", "VEDL", "COALINDIA", "NMDC",
-        "JINDALSTEL", "SAIL", "NATIONALUM", "HINDZINC"
-    ],
-    "Utilities": [
-        "NTPC", "POWERGRID", "ADANIGREEN", "TATAPOWER", "TORNTPOWER",
-        "NHPC", "SJVN", "JSW ENERGY", "CESC"
-    ],
-    "Real Estate": [
-        "DLF", "GODREJPROP", "OBEROIRLTY", "PRESTIGE", "BRIGADE",
-        "SOBHA", "LODHA", "PHOENIXLTD"
-    ],
-    "Communication Services": [
-        "BHARTIARTL", "INDIAMART", "JUSTDIAL", "ROUTE", "NAZARA"
-    ]
-}
+# Dynamic sector cache (populated from API)
+PREDEFINED_SECTORS = {}
 
 
-def get_predefined_sector_tickers(sector: str) -> List[str]:
+def _build_sector_cache(index: str = "NIFTY 200") -> Dict[str, List[str]]:
+    """Build sector cache dynamically from NSE API + yfinance."""
+    global PREDEFINED_SECTORS
+    if PREDEFINED_SECTORS:
+        return PREDEFINED_SECTORS
+    PREDEFINED_SECTORS = get_tickers_grouped_by_sector(index=index)
+    return PREDEFINED_SECTORS
+
+
+def get_predefined_sector_tickers(sector: str, index: str = "NIFTY 200") -> List[str]:
     """
-    Get tickers from predefined sector lists (no API calls needed).
+    Get tickers for a sector dynamically via API.
 
     Args:
         sector: Sector name or alias
+        index: NSE index to search
 
     Returns:
         List of stock symbols
     """
     resolved = resolve_sector_name(sector)
+    sectors = _build_sector_cache(index)
 
     # Find matching sector (case-insensitive partial match)
-    for sec_name, stocks in PREDEFINED_SECTORS.items():
+    for sec_name, stocks in sectors.items():
         if resolved.lower() in sec_name.lower():
             return stocks
 
@@ -404,13 +370,13 @@ if __name__ == "__main__":
             else:
                 print(f"\nNo stocks found for sector: {sector}")
                 print("\nAvailable sectors:")
-                for sec in PREDEFINED_SECTORS.keys():
+                for sec in SECTOR_ALIASES.values():
                     print(f"  - {sec}")
 
     else:
         # Show all predefined sectors
         print("\n" + "=" * 60)
-        print("PREDEFINED SECTOR STOCK LISTS")
+        print("SECTOR STOCK LISTS (fetched dynamically)")
         print("=" * 60)
         print("\nUsage: python sectorial_tickers.py <sector>")
         print("Example: python sectorial_tickers.py banking")
@@ -421,7 +387,8 @@ if __name__ == "__main__":
         print("Available Sectors & Aliases:")
         print("-" * 60)
 
-        for sector, stocks in PREDEFINED_SECTORS.items():
+        sectors = _build_sector_cache()
+        for sector, stocks in sectors.items():
             aliases = [k for k, v in SECTOR_ALIASES.items() if v == sector]
             alias_str = f" (aliases: {', '.join(aliases)})" if aliases else ""
             print(f"\n{sector}{alias_str}")
