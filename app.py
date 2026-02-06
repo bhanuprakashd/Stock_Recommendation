@@ -2140,5 +2140,4 @@ def main():
         render_about()
 
 
-if __name__ == "__main__":
-    main()
+main()
