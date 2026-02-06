@@ -530,7 +530,6 @@ st.markdown("""
         font-size: 0.7rem;
         color: #f59e0b;
     }
-<<<<<<< HEAD
 
     /* Multibagger category badges */
     .mb-badge-strong {
@@ -575,8 +574,6 @@ st.markdown("""
         font-size: 0.85rem;
         color: #1e293b;
     }
-=======
->>>>>>> 9c7428e9db828630f034ebff8fbc46fe8d5a4a98
 </style>
 """, unsafe_allow_html=True)
 
@@ -897,11 +894,7 @@ def render_sidebar():
 
     page = st.sidebar.radio(
         "Navigation",
-<<<<<<< HEAD
         ["🏠 Dashboard", "🔍 Stock Analysis", "📊 Screener", "🚀 Multibagger",
-=======
-        ["🏠 Dashboard", "🔍 Stock Analysis", "📊 Screener",
->>>>>>> 9c7428e9db828630f034ebff8fbc46fe8d5a4a98
          "💰 Position Sizing", "💸 Costs Calculator", "📈 Backtest", "ℹ️ About"],
         label_visibility="collapsed"
     )
@@ -1621,7 +1614,6 @@ def render_about():
 
 
 # =============================================================================
-<<<<<<< HEAD
 # MULTIBAGGER PAGE
 # =============================================================================
 
@@ -2123,8 +2115,6 @@ def render_multibagger_page():
 
 
 # =============================================================================
-=======
->>>>>>> 9c7428e9db828630f034ebff8fbc46fe8d5a4a98
 # MAIN
 # =============================================================================
 
@@ -2138,11 +2128,8 @@ def main():
         render_stock_analysis()
     elif page == "📊 Screener":
         render_screener()
-<<<<<<< HEAD
     elif page == "🚀 Multibagger":
         render_multibagger_page()
-=======
->>>>>>> 9c7428e9db828630f034ebff8fbc46fe8d5a4a98
     elif page == "💰 Position Sizing":
         render_position_calculator()
     elif page == "💸 Costs Calculator":
