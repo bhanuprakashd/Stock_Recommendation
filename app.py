@@ -734,28 +734,28 @@ def render_news_section(symbol: str):
 
 def get_stock_list(index: str = "NIFTY 50", sector: str = "All Sectors"):
     """Get list of stocks based on index and sector filter."""
-    nifty50 = [
-        "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
-        "HINDUNILVR", "SBIN", "BHARTIARTL", "KOTAKBANK", "ITC",
-        "LT", "AXISBANK", "ASIANPAINT", "MARUTI", "BAJFINANCE",
-        "HCLTECH", "SUNPHARMA", "TITAN", "WIPRO", "ULTRACEMCO",
-        "NESTLEIND", "POWERGRID", "NTPC", "TECHM", "JSWSTEEL",
-        "TATASTEEL", "INDUSINDBK", "GRASIM", "ADANIPORTS", "ONGC",
-        "BAJAJFINSV", "DRREDDY", "CIPLA", "EICHERMOT", "HEROMOTOCO",
-        "COALINDIA", "BRITANNIA", "DIVISLAB", "BPCL", "HINDALCO"
+    # Fallback NIFTY 50 list (updated Feb 2026)
+    nifty50_fallback = [
+        "RELIANCE", "HDFCBANK", "BHARTIARTL", "TCS", "ICICIBANK",
+        "SBIN", "INFY", "BAJFINANCE", "LT", "HINDUNILVR",
+        "MARUTI", "M&M", "HCLTECH", "AXISBANK", "SUNPHARMA",
+        "KOTAKBANK", "ITC", "ULTRACEMCO", "TITAN", "ADANIPORTS",
+        "NTPC", "ONGC", "BAJAJFINSV", "POWERGRID", "TATAMOTORS",
+        "COALINDIA", "DRREDDY", "WIPRO", "TATASTEEL", "NESTLEIND",
+        "TECHM", "ADANIENT", "JSWSTEEL", "CIPLA", "GRASIM",
+        "APOLLOHOSP", "EICHERMOT", "TATACONSUM", "BAJAJ-AUTO", "HINDALCO",
+        "SBILIFE", "HDFCLIFE", "ASIANPAINT", "ETERNAL", "TRENT",
+        "SHRIRAMFIN", "BEL", "JIOFIN", "MAXHEALTH", "INDIGO"
     ]
 
     try:
-        if index != "NIFTY 50":
-            stocks = fetch_nse_tickers(index)
-            if stocks and len(stocks) > 0:
-                stocks = [s for s in stocks if not s.startswith("NIFTY")]
-            else:
-                stocks = nifty50
+        stocks = fetch_nse_tickers(index)
+        if stocks and len(stocks) > 0:
+            stocks = [s for s in stocks if not s.startswith("NIFTY")]
         else:
-            stocks = nifty50
+            stocks = nifty50_fallback
     except:
-        stocks = nifty50
+        stocks = nifty50_fallback
 
     if sector and sector != "All Sectors":
         try:
