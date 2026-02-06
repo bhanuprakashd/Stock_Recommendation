@@ -1,0 +1,61 @@
+# Stock Analysis Agent - Dependencies
+# Install: pip install -r requirements.txt
+
+# Core data handling
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Stock data fetching
+yfinance>=0.2.36
+
+# Technical analysis
+ta>=0.11.0
+
+# Caching
+diskcache>=5.6.3
+
+# HTTP requests
+requests>=2.31.0
+
+# Date handling
+python-dateutil>=2.8.2
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Progress bars
+tqdm>=4.66.0
+
+# Colored logging
+colorlog>=6.8.0
+
+# =============================================================================
+# Web UI (Streamlit)
+# =============================================================================
+
+# Streamlit for web interface
+streamlit>=1.31.0
+
+# Plotly for interactive charts
+plotly>=5.18.0
+
+# =============================================================================
+# Quantitative Analysis
+# =============================================================================
+
+# Scientific computing (for quant metrics)
+scipy>=1.11.0
+
+# =============================================================================
+# News Sentiment Analysis (for news-based triggers)
+# =============================================================================
+
+# FinBERT and transformers (for sentiment analysis)
+transformers>=4.35.0
+
+# PyTorch (required for FinBERT)
+# Use 'torch' for GPU support, or 'torch-cpu' for CPU-only (smaller)
+torch>=2.0.0
+
+# Optional: NewsAPI client (if using NewsAPI)
+# newsapi-python>=0.2.7
