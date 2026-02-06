@@ -1330,6 +1330,10 @@ def render_screener():
                 st.warning("No stocks match your criteria. Try relaxing filters.")
         else:
             st.error("Could not analyze any stocks. Check your connection.")
+            if errors:
+                with st.expander(f"Show {len(errors)} errors"):
+                    for err in errors[:20]:
+                        st.text(err)
 
 
 def render_position_calculator():

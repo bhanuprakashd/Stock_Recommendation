@@ -29,56 +29,74 @@ def fetch_stock_history(symbol: str, days: int = 365) -> Optional[pd.DataFrame]:
     Returns:
         DataFrame with columns: Date, Open, High, Low, Close, Volume
     """
-    try:
-        # Add .NS suffix for NSE stocks
-        ticker = f"{symbol}.NS"
+    import time
 
-        # Calculate period string
-        if days <= 30:
-            period = "1mo"
-        elif days <= 90:
-            period = "3mo"
-        elif days <= 180:
-            period = "6mo"
-        elif days <= 365:
-            period = "1y"
-        elif days <= 730:
-            period = "2y"
-        elif days <= 1825:
-            period = "5y"
-        elif days <= 3650:
-            period = "10y"
-        else:
-            period = "max"
+    ticker = f"{symbol}.NS"
 
-        stock = yf.Ticker(ticker)
-        df = stock.history(period=period)
+    # Calculate period string
+    if days <= 30:
+        period = "1mo"
+    elif days <= 90:
+        period = "3mo"
+    elif days <= 180:
+        period = "6mo"
+    elif days <= 365:
+        period = "1y"
+    elif days <= 730:
+        period = "2y"
+    elif days <= 1825:
+        period = "5y"
+    elif days <= 3650:
+        period = "10y"
+    else:
+        period = "max"
 
-        if df is None or df.empty:
+    for attempt in range(3):
+        try:
+            # Try yf.download first (more reliable on cloud)
+            df = yf.download(ticker, period=period, progress=False, timeout=15)
+
+            if df is None or df.empty:
+                # Fallback to Ticker.history
+                stock = yf.Ticker(ticker)
+                df = stock.history(period=period)
+
+            if df is None or df.empty:
+                if attempt < 2:
+                    time.sleep(1 + attempt)
+                    continue
+                return None
+
+            # Reset index to get Date as column
+            df = df.reset_index()
+
+            # Handle MultiIndex columns from yf.download
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = [col[0] if col[1] == '' or col[1] == ticker else col[0]
+                              for col in df.columns]
+
+            # Standardize column names
+            df = df.rename(columns={
+                "Datetime": "Date",
+                "Adj Close": "Adj_Close"
+            })
+
+            # Select columns
+            cols = ["Date", "Open", "High", "Low", "Close", "Volume"]
+            df = df[[c for c in cols if c in df.columns]]
+
+            # Convert date and sort
+            df["Date"] = pd.to_datetime(df["Date"])
+            df = df.sort_values("Date").reset_index(drop=True)
+
+            return df
+
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(1 + attempt)
+                continue
+            print(f"Error fetching {symbol}: {e}")
             return None
-
-        # Reset index to get Date as column
-        df = df.reset_index()
-
-        # Standardize column names
-        df = df.rename(columns={
-            "Datetime": "Date",
-            "Adj Close": "Adj_Close"
-        })
-
-        # Select columns
-        cols = ["Date", "Open", "High", "Low", "Close", "Volume"]
-        df = df[[c for c in cols if c in df.columns]]
-
-        # Convert date and sort
-        df["Date"] = pd.to_datetime(df["Date"])
-        df = df.sort_values("Date").reset_index(drop=True)
-
-        return df
-
-    except Exception as e:
-        print(f"Error fetching {symbol}: {e}")
-        return None
 
 
 def fetch_multiple_stocks(

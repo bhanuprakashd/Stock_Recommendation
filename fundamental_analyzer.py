@@ -37,57 +37,73 @@ def get_fundamentals(symbol: str) -> Optional[Dict]:
     Returns:
         Dictionary of fundamental metrics
     """
-    try:
-        ticker = yf.Ticker(f"{symbol}.NS")
-        info = ticker.info
+    import time
 
-        price = info.get('regularMarketPrice') or info.get('currentPrice') or info.get('previousClose')
-        if not info or price is None:
+    for attempt in range(3):
+        try:
+            ticker = yf.Ticker(f"{symbol}.NS")
+            info = ticker.info
+
+            if not info or len(info) < 5:
+                # yfinance sometimes returns near-empty dicts on rate limit
+                if attempt < 2:
+                    time.sleep(1 + attempt)
+                    continue
+                return None
+
+            price = (info.get('regularMarketPrice')
+                     or info.get('currentPrice')
+                     or info.get('previousClose')
+                     or info.get('open'))
+            if price is None:
+                return None
+
+            return {
+                # Price & Valuation
+                'price': price,
+                'pe_ratio': info.get('trailingPE'),
+                'forward_pe': info.get('forwardPE'),
+                'pb_ratio': info.get('priceToBook'),
+                'peg_ratio': info.get('pegRatio'),
+                'ev_ebitda': info.get('enterpriseToEbitda'),
+                'market_cap': info.get('marketCap'),
+
+                # Profitability
+                'roe': info.get('returnOnEquity'),
+                'roa': info.get('returnOnAssets'),
+                'profit_margin': info.get('profitMargins'),
+                'operating_margin': info.get('operatingMargins'),
+                'gross_margin': info.get('grossMargins'),
+
+                # Growth
+                'revenue_growth': info.get('revenueGrowth'),
+                'earnings_growth': info.get('earningsGrowth'),
+                'earnings_quarterly_growth': info.get('earningsQuarterlyGrowth'),
+
+                # Financial Health
+                'debt_to_equity': info.get('debtToEquity'),
+                'current_ratio': info.get('currentRatio'),
+                'quick_ratio': info.get('quickRatio'),
+                'total_debt': info.get('totalDebt'),
+                'total_cash': info.get('totalCash'),
+
+                # Dividends
+                'dividend_yield': info.get('dividendYield'),
+                'payout_ratio': info.get('payoutRatio'),
+
+                # Other
+                'beta': info.get('beta'),
+                'sector': info.get('sector', 'Unknown'),
+                'industry': info.get('industry', 'Unknown'),
+                'company_name': info.get('shortName', symbol),
+                'avg_volume': info.get('averageVolume'),
+            }
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(1 + attempt)
+                continue
+            print(f"Error fetching fundamentals for {symbol}: {e}")
             return None
-
-        return {
-            # Price & Valuation
-            'price': price,
-            'pe_ratio': info.get('trailingPE'),
-            'forward_pe': info.get('forwardPE'),
-            'pb_ratio': info.get('priceToBook'),
-            'peg_ratio': info.get('pegRatio'),
-            'ev_ebitda': info.get('enterpriseToEbitda'),
-            'market_cap': info.get('marketCap'),
-
-            # Profitability
-            'roe': info.get('returnOnEquity'),
-            'roa': info.get('returnOnAssets'),
-            'profit_margin': info.get('profitMargins'),
-            'operating_margin': info.get('operatingMargins'),
-            'gross_margin': info.get('grossMargins'),
-
-            # Growth
-            'revenue_growth': info.get('revenueGrowth'),
-            'earnings_growth': info.get('earningsGrowth'),
-            'earnings_quarterly_growth': info.get('earningsQuarterlyGrowth'),
-
-            # Financial Health
-            'debt_to_equity': info.get('debtToEquity'),
-            'current_ratio': info.get('currentRatio'),
-            'quick_ratio': info.get('quickRatio'),
-            'total_debt': info.get('totalDebt'),
-            'total_cash': info.get('totalCash'),
-
-            # Dividends
-            'dividend_yield': info.get('dividendYield'),
-            'payout_ratio': info.get('payoutRatio'),
-
-            # Other
-            'beta': info.get('beta'),
-            'sector': info.get('sector', 'Unknown'),
-            'industry': info.get('industry', 'Unknown'),
-            'company_name': info.get('shortName', symbol),
-            'avg_volume': info.get('averageVolume'),
-        }
-    except Exception as e:
-        print(f"Error fetching fundamentals for {symbol}: {e}")
-        return None
 
 
 def calculate_piotroski_score(info: Dict) -> Tuple[int, str, List[str]]:
